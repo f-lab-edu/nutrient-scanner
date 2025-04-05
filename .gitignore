@@ -44,5 +44,5 @@ app.*.map.json
 
 # api key
 lib/.env
-lib/.env.dart
-lib/.env.g.dart
+lib/env.dart
+lib/env.g.dart
