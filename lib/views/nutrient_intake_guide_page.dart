@@ -1,11 +1,12 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:nutrient_scanner/env.dart';
+import 'package:nutrient_scanner/models/nutrient_recognized_text.dart';
 import 'package:openai_dart/openai_dart.dart';
 
+part 'nutrient_intake_guide_page.view.dart';
+
 class NutrientIntakeGuidePage extends StatefulWidget {
-  final String recognizedText;
+  final NutrientRecognizedText? recognizedText;
   const NutrientIntakeGuidePage({super.key, required this.recognizedText});
 
   @override
@@ -22,65 +23,22 @@ class _NutrientIntakeGuidePageState extends State<NutrientIntakeGuidePage> {
   // String systemPrompt =
   //     '당신은 영양사입니다. 사용자가 입력한 영양성분을 바탕으로 영양소를 분석하고, 사용자가 입력한 질문에 대한 답변을 제공합니다. 사용자가 입력한 질문은 영양소와 관련된 질문입니다. 사용자가 입력한 질문에 대한 답변을 제공하세요.';
 
-  ///TODO:: 프롬프트 입력 받는 부분은 추후에 제거하고, 고정된 프롬프트로 변경할 예정
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Nutrient Intake Guide'),
-      ),
-      resizeToAvoidBottomInset: true,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  ElevatedButton(
-                    onPressed: () => showRecognizedText(context),
-                    child: const Text('OCR 데이터 확인하기'),
-                  ),
-                  TextField(
-                    controller: _systemTextController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'GPT 역할 입력...',
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _userTextController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'GPT에게 어떻게 물어볼지 입력...',
-                    ),
-                  ),
-                  ElevatedButton(
-                      onPressed: analyzeNutrientLabel,
-                      child: const Text('OCR데이터와 함께 GPT에게 물어보기')),
-                  answer != ''
-                      ? Container(
-                          padding: const EdgeInsets.all(16.0),
-                          margin: const EdgeInsets.only(top: 20),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                          height: 450,
-                          width: MediaQuery.of(context).size.width * 0.9,
-                          child: SingleChildScrollView(
-                            child: Text(
-                              'GPT의 답변:\n$answer',
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
-                          ),
-                        )
-                      : const SizedBox(),
-                ],
-              ),
-      ),
-    );
+        appBar: AppBar(
+          title: const Text('Nutrient Intake Guide'),
+        ),
+        resizeToAvoidBottomInset: true,
+        body: _NutrientIntakeGuideView(
+          recognizedText: widget.recognizedText?.text ?? '',
+          answer: answer,
+          isLoading: isLoading,
+          systemTextController: _systemTextController,
+          userTextController: _userTextController,
+          analyzeNutrientLabel: analyzeNutrientLabel,
+          showRecognizedText: () => showRecognizedText(context),
+        ));
   }
 
   void analyzeNutrientLabel() async {
@@ -99,7 +57,7 @@ class _NutrientIntakeGuidePageState extends State<NutrientIntakeGuidePage> {
             ),
             ChatCompletionMessage.user(
               content: ChatCompletionUserMessageContent.string(
-                  '$_userTextController.text + 성분: ${widget.recognizedText}'),
+                  '${_userTextController.text}\n성분: ${widget.recognizedText?.text}'),
             ),
           ],
           temperature: 0,
@@ -126,7 +84,7 @@ class _NutrientIntakeGuidePageState extends State<NutrientIntakeGuidePage> {
         return AlertDialog(
           title: const Text('OCR 데이터'),
           content: SingleChildScrollView(
-            child: Text(widget.recognizedText),
+            child: Text(widget.recognizedText?.text ?? ''),
           ),
           actions: <Widget>[
             TextButton(

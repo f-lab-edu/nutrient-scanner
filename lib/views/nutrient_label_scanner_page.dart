@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nutrient_scanner/models/nutrient_recognized_text.dart';
 import 'package:nutrient_scanner/views/nutrient_intake_guide_page.dart';
+
+part 'nutrient_label_scanner_page.view.dart';
 
 class NutrientLabelScannerPage extends StatefulWidget {
   const NutrientLabelScannerPage({
@@ -16,7 +19,7 @@ class _NutrientLabelScannerState extends State<NutrientLabelScannerPage> {
   final ImagePicker picker = ImagePicker();
   final TextRecognizer textRecognizer =
       TextRecognizer(script: TextRecognitionScript.korean);
-  String recognizedText = '';
+  NutrientRecognizedText? recognizedText;
   bool isLoading = false;
 
   @override
@@ -25,51 +28,11 @@ class _NutrientLabelScannerState extends State<NutrientLabelScannerPage> {
       appBar: AppBar(
         title: const Text('Nutrient Label Scanner'),
       ),
-      body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      ElevatedButton(
-                          onPressed: () => getImage(ImageSource.camera),
-                          child: Text('Camera',
-                              style:
-                                  Theme.of(context).textTheme.headlineMedium)),
-                      ElevatedButton(
-                          onPressed: () => getImage(ImageSource.gallery),
-                          child: Text('Gallery',
-                              style:
-                                  Theme.of(context).textTheme.headlineMedium)),
-                    ],
-                  ),
-                  recognizedText != ''
-                      ? ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => NutrientIntakeGuidePage(
-                                    recognizedText: recognizedText),
-                              ),
-                            );
-                          },
-                          child: Text('GPT한테 물어보러 가기',
-                              style:
-                                  Theme.of(context).textTheme.headlineMedium),
-                        )
-                      : const SizedBox(),
-                  Text(
-                    'OCR 결과:\n$recognizedText',
-                  ),
-                ],
-              ),
-            ),
+      body: _NutrientLabelScannerView(
+        recognizedText: recognizedText,
+        isLoading: isLoading,
+        getImage: getImage,
+      ),
     );
   }
 
@@ -92,12 +55,12 @@ class _NutrientLabelScannerState extends State<NutrientLabelScannerPage> {
       final RecognizedText recognisedText =
           await textRecognizer.processImage(inputImage);
 
-      recognizedText = "";
-
+      String text = "";
       for (TextBlock block in recognisedText.blocks) {
         for (TextLine line in block.lines) {
+          text += "${line.text}\n";
           setState(() {
-            recognizedText += "${line.text}\n";
+            recognizedText = NutrientRecognizedText(text);
           });
         }
       }
