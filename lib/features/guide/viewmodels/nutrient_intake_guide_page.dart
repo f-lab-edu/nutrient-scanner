@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nutrient_scanner/env.dart';
+import 'package:nutrient_scanner/config/env.dart';
 import 'package:nutrient_scanner/features/nutrient_scanner/models/recognized_text_model.dart';
 import 'package:openai_dart/openai_dart.dart';
 
