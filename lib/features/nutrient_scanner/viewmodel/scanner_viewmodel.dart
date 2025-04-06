@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:nutrient_scanner/features/nutrient_scanner/models/recognized_text_model.dart';
-import 'package:nutrient_scanner/features/guide/viewmodels/nutrient_intake_guide_page.dart';
+import 'package:nutrient_scanner/features/nutrient_scanner/model/recognized_text_model.dart';
+import 'package:nutrient_scanner/features/nutrient_intake_guide/viewmodel/guide_viewmodel.dart';
 
-part '../views/scanner_view.dart';
+part '../view/scanner_view.dart';
 
 class NutrientLabelScannerPage extends StatefulWidget {
   const NutrientLabelScannerPage({

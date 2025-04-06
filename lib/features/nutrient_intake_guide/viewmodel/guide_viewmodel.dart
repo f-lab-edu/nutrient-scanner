@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:nutrient_scanner/config/env.dart';
-import 'package:nutrient_scanner/features/nutrient_scanner/models/recognized_text_model.dart';
+import 'package:nutrient_scanner/features/nutrient_scanner/model/recognized_text_model.dart';
 import 'package:openai_dart/openai_dart.dart';
 
-part '../views/nutrient_intake_guide_page.view.dart';
+part '../view/guide_view.dart';
 
-class NutrientIntakeGuidePage extends StatefulWidget {
+class NutrientIntakeGuideViewModel extends StatefulWidget {
   final NutrientRecognizedText? recognizedText;
-  const NutrientIntakeGuidePage({super.key, required this.recognizedText});
+  const NutrientIntakeGuideViewModel({super.key, required this.recognizedText});
 
   @override
-  State<NutrientIntakeGuidePage> createState() =>
-      _NutrientIntakeGuidePageState();
+  State<NutrientIntakeGuideViewModel> createState() =>
+      _NutrientIntakeGuideViewModelState();
 }
 
-class _NutrientIntakeGuidePageState extends State<NutrientIntakeGuidePage> {
+class _NutrientIntakeGuideViewModelState extends State<NutrientIntakeGuideViewModel> {
   final TextEditingController _systemTextController = TextEditingController();
   final TextEditingController _userTextController = TextEditingController();
 

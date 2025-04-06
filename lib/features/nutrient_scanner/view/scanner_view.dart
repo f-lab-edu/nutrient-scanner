@@ -1,4 +1,4 @@
-part of '../viewmodels/scanner_viewmodel.dart';
+part of '../viewmodel/scanner_viewmodel.dart';
 
 class _NutrientLabelScannerView extends StatelessWidget {
   final NutrientRecognizedText? recognizedText;
@@ -39,8 +39,9 @@ class _NutrientLabelScannerView extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => NutrientIntakeGuidePage(
-                                  recognizedText: recognizedText),
+                              builder: (context) =>
+                                  NutrientIntakeGuideViewModel(
+                                      recognizedText: recognizedText),
                             ),
                           );
                         },
