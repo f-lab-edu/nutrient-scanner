@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nutrient_scanner/views/nutrient_label_scanner_page.dart';
+import 'package:nutrient_scanner/features/nutrient_scanner/viewmodels/scanner_viewmodel.dart';
 
 void main() {
   runApp(

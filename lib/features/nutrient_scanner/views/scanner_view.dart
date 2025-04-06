@@ -1,4 +1,4 @@
-part of 'nutrient_label_scanner_page.dart';
+part of '../viewmodels/scanner_viewmodel.dart';
 
 class _NutrientLabelScannerView extends StatelessWidget {
   final NutrientRecognizedText? recognizedText;

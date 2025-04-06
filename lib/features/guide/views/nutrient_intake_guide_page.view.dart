@@ -1,4 +1,4 @@
-part of 'nutrient_intake_guide_page.dart';
+part of '../viewmodels/nutrient_intake_guide_page.dart';
 
 class _NutrientIntakeGuideView extends StatelessWidget {
   final String recognizedText;

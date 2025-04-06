@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:nutrient_scanner/env.dart';
-import 'package:nutrient_scanner/models/nutrient_recognized_text.dart';
+import 'package:nutrient_scanner/features/nutrient_scanner/models/recognized_text_model.dart';
 import 'package:openai_dart/openai_dart.dart';
 
-part 'nutrient_intake_guide_page.view.dart';
+part '../views/nutrient_intake_guide_page.view.dart';
 
 class NutrientIntakeGuidePage extends StatefulWidget {
   final NutrientRecognizedText? recognizedText;
