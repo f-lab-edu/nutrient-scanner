@@ -6,16 +6,17 @@ import 'package:nutrient_scanner/features/nutrient_intake_guide/viewmodel/guide_
 
 part '../view/scanner_view.dart';
 
-class NutrientLabelScannerPage extends StatefulWidget {
-  const NutrientLabelScannerPage({
+class NutrientLabelScannerViewModel extends StatefulWidget {
+  const NutrientLabelScannerViewModel({
     super.key,
   });
 
   @override
-  State<NutrientLabelScannerPage> createState() => _NutrientLabelScannerState();
+  State<NutrientLabelScannerViewModel> createState() =>
+      _NutrientLabelScannerState();
 }
 
-class _NutrientLabelScannerState extends State<NutrientLabelScannerPage> {
+class _NutrientLabelScannerState extends State<NutrientLabelScannerViewModel> {
   final ImagePicker picker = ImagePicker();
   final TextRecognizer textRecognizer =
       TextRecognizer(script: TextRecognitionScript.korean);
