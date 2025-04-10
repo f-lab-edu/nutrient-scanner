@@ -65,6 +65,7 @@ class _NutrientLabelScannerState extends State<NutrientLabelScannerViewModel> {
           });
         }
       }
+      textRecognizer.close();
     } catch (e) {
       if (!mounted) {
         return;
