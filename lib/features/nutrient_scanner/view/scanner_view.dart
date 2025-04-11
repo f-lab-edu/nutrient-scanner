@@ -33,22 +33,19 @@ class _NutrientLabelScannerView extends StatelessWidget {
                             style: Theme.of(context).textTheme.headlineMedium)),
                   ],
                 ),
-                recognizedText?.text != '' && recognizedText?.text != null
-                    ? ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  NutrientIntakeGuideViewModel(
-                                      recognizedText: recognizedText),
-                            ),
-                          );
-                        },
-                        child: Text('GPT한테 물어보러 가기',
-                            style: Theme.of(context).textTheme.headlineMedium),
-                      )
-                    : const SizedBox(),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NutrientIntakeGuideViewModel(
+                            recognizedText: recognizedText),
+                      ),
+                    );
+                  },
+                  child: Text('GPT한테 물어보러 가기',
+                      style: Theme.of(context).textTheme.headlineMedium),
+                ),
                 Text(
                   'OCR 결과:\n${recognizedText?.text ?? '인식된 텍스트가 없습니다.'}',
                 ),
