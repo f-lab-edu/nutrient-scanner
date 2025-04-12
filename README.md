@@ -4,7 +4,23 @@
 
 # 프로젝트 구조
 - 촬영한 사진을 google_mlkit_text_recognition을 사용해서 내용을 텍스트로 읽어온 다음, 이 텍스트를 가지고 OpenAI API를 이용해 ChatGPT에게 성분 분석을 요청합니다.
-- MVVM 패턴을 따릅니다. 
+- Feature-Based MVVM 패턴을 따릅니다.
+```
+  lib/
+  └── features/
+    └── nutrient_intake_guide/
+        ├── model/
+        ├── service/
+        ├── view/guide_view.dart
+        └── viewmodel/guide_viewmodel.dart
+    └── nutrient_scanner/        
+        ├── model/
+            ├──recognized_text_model.dart
+            └──cache_manager.dart
+        ├── service/
+        ├── view/scanner_view.dart
+        └── viewmodel/scanner_viewmodel.dart
+```
 - 캐싱 레이어를 통해 단기간에 동일한 내용을 여러번 호출하지 않도록 구성하여 비용을 절감합니다.
 <br/><br/>
 ![아키텍처 다이어그램](https://github.com/user-attachments/assets/5529884f-ffe9-4b5c-bf92-58e9257e6e71)
