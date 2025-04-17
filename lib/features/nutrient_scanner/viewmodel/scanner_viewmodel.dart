@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:nutrient_scanner/features/nutrient_scanner/model/recognized_text_model.dart';
 import 'package:nutrient_scanner/features/nutrient_intake_guide/viewmodel/guide_viewmodel.dart';
+import 'package:nutrient_scanner/features/nutrient_scanner/model/recognized_text_model.dart';
+import 'package:nutrient_scanner/features/nutrient_scanner/service/scanner_service.dart';
+import 'package:nutrient_scanner/util/error_util.dart';
 
 part '../view/scanner_view.dart';
 
 class NutrientLabelScannerViewModel extends StatefulWidget {
-  const NutrientLabelScannerViewModel({
-    super.key,
-  });
+  const NutrientLabelScannerViewModel({super.key});
 
   @override
   State<NutrientLabelScannerViewModel> createState() =>
@@ -17,9 +16,7 @@ class NutrientLabelScannerViewModel extends StatefulWidget {
 }
 
 class _NutrientLabelScannerState extends State<NutrientLabelScannerViewModel> {
-  final ImagePicker picker = ImagePicker();
-  final TextRecognizer textRecognizer =
-      TextRecognizer(script: TextRecognitionScript.korean);
+  final ScannerService _scannerService = ScannerService();
   NutrientRecognizedText? recognizedText;
   bool isLoading = false;
 
@@ -37,49 +34,46 @@ class _NutrientLabelScannerState extends State<NutrientLabelScannerViewModel> {
     );
   }
 
-  Future getImage(ImageSource imageSource) async {
-    final pickedImage = await picker.pickImage(source: imageSource);
+  Future<void> getImage(ImageSource imageSource) async {
+    try {
+      _setLoading(true);
+      final pickedImage = await _pickImage(imageSource);
+      if (pickedImage == null) return;
 
-    if (pickedImage == null) {
-      return;
+      final text = await _processImage(pickedImage.path);
+
+      _updateRecognizedText(text);
+    } catch (e) {
+      _handleError(e);
+    } finally {
+      _setLoading(false);
     }
-
-    _recognizeImage(pickedImage);
   }
 
-  void _recognizeImage(XFile image) async {
+  Future<XFile?> _pickImage(ImageSource imageSource) async {
+    return await _scannerService.pickImage(imageSource);
+  }
+
+  Future<String> _processImage(String imagePath) async {
+    return await _scannerService.recognizeTextFromImage(imagePath);
+  }
+
+  void _updateRecognizedText(String text) {
     setState(() {
-      isLoading = true;
+      recognizedText = NutrientRecognizedText(text);
     });
-    try {
-      final inputImage = InputImage.fromFilePath(image.path);
-      final RecognizedText recognisedText =
-          await textRecognizer.processImage(inputImage);
+  }
 
-      String text = "";
-      for (TextBlock block in recognisedText.blocks) {
-        for (TextLine line in block.lines) {
-          text += "${line.text}\n";
-          setState(() {
-            recognizedText = NutrientRecognizedText(text);
-          });
-        }
-      }
-      textRecognizer.close();
-    } catch (e) {
-      if (!mounted) {
-        return;
-      }
+  void _handleError(Object error) {
+    final errorMessage = ErrorUtil.formatErrorMessage(error);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(errorMessage)),
+    );
+  }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error recognizing text: $e'),
-        ),
-      );
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
+  void _setLoading(bool value) {
+    setState(() {
+      isLoading = value;
+    });
   }
 }

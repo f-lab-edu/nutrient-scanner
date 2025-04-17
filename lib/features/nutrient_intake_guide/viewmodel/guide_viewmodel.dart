@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:nutrient_scanner/config/env.dart';
+import 'package:nutrient_scanner/features/nutrient_intake_guide/model/analysis_result.dart';
+import 'package:nutrient_scanner/features/nutrient_intake_guide/service/openai_service.dart';
 import 'package:nutrient_scanner/features/nutrient_scanner/model/recognized_text_model.dart';
-import 'package:openai_dart/openai_dart.dart';
+import 'package:nutrient_scanner/util/error_util.dart';
 
 part '../view/guide_view.dart';
 
@@ -14,14 +15,14 @@ class NutrientIntakeGuideViewModel extends StatefulWidget {
       _NutrientIntakeGuideViewModelState();
 }
 
-class _NutrientIntakeGuideViewModelState extends State<NutrientIntakeGuideViewModel> {
+class _NutrientIntakeGuideViewModelState
+    extends State<NutrientIntakeGuideViewModel> {
   final TextEditingController _systemTextController = TextEditingController();
   final TextEditingController _userTextController = TextEditingController();
+  final OpenAIService _openAIService = OpenAIService();
 
   bool isLoading = false;
   String answer = '';
-  // String systemPrompt =
-  //     '당신은 영양사입니다. 사용자가 입력한 영양성분을 바탕으로 영양소를 분석하고, 사용자가 입력한 질문에 대한 답변을 제공합니다. 사용자가 입력한 질문은 영양소와 관련된 질문입니다. 사용자가 입력한 질문에 대한 답변을 제공하세요.';
 
   @override
   Widget build(BuildContext context) {
@@ -42,39 +43,43 @@ class _NutrientIntakeGuideViewModelState extends State<NutrientIntakeGuideViewMo
   }
 
   void analyzeNutrientLabel() async {
-    final openaiApiKey = Env.apiKey;
-    final client = OpenAIClient(apiKey: openaiApiKey);
-    setState(() {
-      isLoading = true;
-    });
+    _setLoading(true);
     try {
-      final res = await client.createChatCompletion(
-        request: CreateChatCompletionRequest(
-          model: const ChatCompletionModel.modelId('gpt-4o'),
-          messages: [
-            ChatCompletionMessage.system(
-              content: _systemTextController.text,
-            ),
-            ChatCompletionMessage.user(
-              content: ChatCompletionUserMessageContent.string(
-                  '${_userTextController.text}\n성분: ${widget.recognizedText?.text}'),
-            ),
-          ],
-          temperature: 0,
-        ),
-      );
-      setState(() {
-        answer = res.choices.first.message.content.toString();
-      });
+      final result = await _fetchAnalysisResult();
+      _updateAnswer(result);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('에러 발생: $e')),
-      );
+      _showError(e);
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      _setLoading(false);
     }
+  }
+
+  void _updateAnswer(String result) {
+    setState(() {
+      final analysisResult = AnalysisResult.fromApiResponse(result);
+      answer = analysisResult.answer;
+    });
+  }
+
+  void _showError(Object error) {
+    final errorMessage = ErrorUtil.formatErrorMessage(error);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(errorMessage)),
+    );
+  }
+
+  void _setLoading(bool value) {
+    setState(() {
+      isLoading = value;
+    });
+  }
+
+  Future<String> _fetchAnalysisResult() async {
+    return await _openAIService.analyzeNutrientLabel(
+      systemPrompt: _systemTextController.text,
+      userPrompt: _userTextController.text,
+      recognizedText: widget.recognizedText?.text ?? '',
+    );
   }
 
   void showRecognizedText(BuildContext context) {
