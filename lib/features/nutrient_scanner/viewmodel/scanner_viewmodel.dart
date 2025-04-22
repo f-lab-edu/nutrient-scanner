@@ -37,17 +37,20 @@ class _NutrientLabelScannerState extends State<NutrientLabelScannerViewModel> {
   Future<void> getImage(ImageSource imageSource) async {
     try {
       _setLoading(true);
-      final pickedImage = await _pickImage(imageSource);
-      if (pickedImage == null) return;
-
-      final text = await _processImage(pickedImage.path);
-
-      _updateRecognizedText(text);
+      await _pickAndProcessImage(imageSource);
     } catch (e) {
       _handleError(e);
     } finally {
       _setLoading(false);
     }
+  }
+
+  Future<void> _pickAndProcessImage(ImageSource imageSource) async {
+    final pickedImage = await _pickImage(imageSource);
+    if (pickedImage == null) return;
+
+    final text = await _processImage(pickedImage.path);
+    _updateRecognizedText(text);
   }
 
   Future<XFile?> _pickImage(ImageSource imageSource) async {
