@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.yujin.scanner.nutrient_scanner"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 35
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -37,6 +37,10 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+}
+
+dependencies {
+    implementation 'com.google.mlkit:text-recognition-korean:16.0.0'
 }
 
 flutter {
