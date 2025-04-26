@@ -2,7 +2,7 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:image_picker/image_picker.dart';
 import 'package:nutrient_scanner/util/text_util.dart';
 
-class ScannerService {
+class OCRScanService {
   final ImagePicker _picker = ImagePicker();
   final TextRecognizer _textRecognizer =
       TextRecognizer(script: TextRecognitionScript.korean);

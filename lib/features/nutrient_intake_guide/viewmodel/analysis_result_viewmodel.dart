@@ -1,34 +1,25 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../../util/cache_manager.dart';
 import '../model/analysis_result.dart';
 
 class AnalysisResultViewModel {
-  static const _cacheKey = 'analysis_result_answer';
-  static const _cacheDuration = Duration(days: 7);
+  final CacheManager _cacheManager = CacheManager();
 
-  /// Save the AnalysisResult to cache
-  Future<void> saveToCache(AnalysisResult result) async {
-    final prefs = await SharedPreferences.getInstance();
-    final expiryDate = DateTime.now().add(_cacheDuration).toIso8601String();
-    await prefs.setString(_cacheKey, result.answer);
-    await prefs.setString('${_cacheKey}_expiry', expiryDate);
+  Future<void> saveToCache(String barcode, AnalysisResult result) async {
+    final cacheKey = _getCacheKey(barcode);
+    await _cacheManager.saveToCache(cacheKey, result.answer);
   }
 
-  /// Load the AnalysisResult from cache if valid
-  Future<AnalysisResult?> loadFromCache() async {
-    final prefs = await SharedPreferences.getInstance();
-    final cachedAnswer = prefs.getString(_cacheKey);
-    final expiryDateStr = prefs.getString('${_cacheKey}_expiry');
+  Future<AnalysisResult?> loadFromCache(String barcode) async {
+    final cacheKey = _getCacheKey(barcode);
+    final cachedAnswer = await _cacheManager.loadFromCache(cacheKey);
 
-    if (cachedAnswer != null && expiryDateStr != null) {
-      final expiryDate = DateTime.parse(expiryDateStr);
-      if (DateTime.now().isBefore(expiryDate)) {
-        return AnalysisResult(cachedAnswer);
-      } else {
-        // Cache expired, clear it
-        await prefs.remove(_cacheKey);
-        await prefs.remove('${_cacheKey}_expiry');
-      }
+    if (cachedAnswer != null) {
+      return AnalysisResult(cachedAnswer);
     }
     return null;
+  }
+
+  String _getCacheKey(String barcode) {
+    return barcode;
   }
 }
