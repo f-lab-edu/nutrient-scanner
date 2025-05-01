@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class CacheManager {
   static const _cacheDuration = Duration(days: 7);
 
-  Future<void> saveToCache(String key, String value) async {
+  Future<void> save(String key, String value) async {
     final prefs = await SharedPreferences.getInstance();
     final expiryDate = DateTime.now().add(_cacheDuration).toIso8601String();
 
@@ -11,25 +11,41 @@ class CacheManager {
     await prefs.setString('${key}_expiry', expiryDate);
   }
 
-  Future<String?> loadFromCache(String key) async {
+  Future<String?> load(String key) async {
     final prefs = await SharedPreferences.getInstance();
-    final cachedValue = prefs.getString(key);
-    final expiryDateStr = prefs.getString('${key}_expiry');
+    final cachedValue = _getCachedValue(prefs, key);
+    final expiryDate = _getExpiryDate(prefs, key);
 
-    if (cachedValue != null && expiryDateStr != null) {
-      final expiryDate = DateTime.parse(expiryDateStr);
-      if (DateTime.now().isBefore(expiryDate)) {
-        return cachedValue;
-      } else {
-        // Remove expired cache
-        await prefs.remove(key);
-        await prefs.remove('${key}_expiry');
-      }
+    if (cachedValue == null || expiryDate == null) {
+      return null;
     }
-    return null;
+    if (_isExpired(expiryDate)) {
+      await prefs.remove(key);
+      await prefs.remove('${key}_expiry');
+    }
+    return cachedValue;
   }
 
-  Future<void> removeFromCache(String key) async {
+  String? _getCachedValue(SharedPreferences prefs, String key) {
+    return prefs.getString(key);
+  }
+
+  DateTime? _getExpiryDate(SharedPreferences prefs, String key) {
+    final expiryDateStr = prefs.getString('${key}_expiry');
+    if (expiryDateStr == null) return null;
+
+    try {
+      return DateTime.parse(expiryDateStr);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool _isExpired(DateTime expiryDate) {
+    return DateTime.now().isAfter(expiryDate);
+  }
+
+  Future<void> remove(String key) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(key);
     await prefs.remove('${key}_expiry');

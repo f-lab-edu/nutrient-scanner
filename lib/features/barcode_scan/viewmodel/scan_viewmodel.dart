@@ -36,32 +36,53 @@ class _BarcodeScanState extends State<BarcodeScanViewModel> {
   }
 
   Future<void> startBarcodeScan(BuildContext context) async {
-    final barcode = await _scanService.scanBarcode(context);
     try {
-      if (barcode != null) {
-        _updateScannedBarcode(barcode.value);
+      final barcode = await _performBarcodeScan(context);
+      if (barcode != null && context.mounted) {
+        await _handleScannerBarcode(context, barcode.value);
       }
     } catch (e) {
       _handleError(e);
     } finally {
-      ///디버그 모드일 때에는 촬영이 불가능하여 임의의 바코드 값을 설정한다.
-      if (kDebugMode) {
-        _updateScannedBarcode('1234567890123');
-        if (context.mounted) {
-          await _checkCachedData(context, scannedBarcode);
-        }
+      if (context.mounted) {
+        await _checkDebugModeCachedData(context);
       }
     }
   }
 
-  Future<void> _checkCachedData(BuildContext context, String? barcode) async {
-    final cachedData = await _cacheService.loadFromCache(barcode ?? '');
+  Future<Barcode?> _performBarcodeScan(BuildContext context) async {
+    return await _scanService.scanBarcode(context);
+  }
+
+  Future<void> _handleScannerBarcode(
+      BuildContext context, String barcodeValue) async {
+    _updateScannedBarcode(barcodeValue);
     if (context.mounted) {
-      if (cachedData != null) {
-        _navigateToIntakeGuide(context, cachedData);
-      } else {
-        _navigateToNutrientScan(context);
+      await _checkCachedData(context, barcodeValue);
+    }
+  }
+
+  Future<void> _checkDebugModeCachedData(BuildContext context) async {
+    if (kDebugMode) {
+      _setDebugBarcodeTemp();
+      if (context.mounted) {
+        await _checkCachedData(context, scannedBarcode ?? '');
       }
+    }
+  }
+
+  void _setDebugBarcodeTemp() {
+    _updateScannedBarcode('1234567890123');
+  }
+
+  Future<void> _checkCachedData(BuildContext context, String? barcode) async {
+    final cachedData = await _cacheService.load(barcode ?? '');
+    if (!context.mounted) return;
+
+    if (cachedData != null) {
+      _navigateToIntakeGuide(context, cachedData);
+    } else {
+      _navigateToNutrientScan(context);
     }
   }
 
