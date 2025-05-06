@@ -65,10 +65,9 @@ class _BarcodeScanState extends State<BarcodeScanViewModel> {
   Future<void> _checkDebugModeCachedData(BuildContext context) async {
     if (kDebugMode) {
       _setDebugBarcodeTemp();
-      if (context.mounted) {
-        await _checkCachedData(context, scannedBarcode ?? '');
-      }
     }
+
+    await _checkCachedData(context, scannedBarcode ?? '');
   }
 
   void _setDebugBarcodeTemp() {
@@ -78,7 +77,6 @@ class _BarcodeScanState extends State<BarcodeScanViewModel> {
   Future<void> _checkCachedData(BuildContext context, String? barcode) async {
     final cachedData = await _cacheService.load(barcode ?? '');
     if (!context.mounted) return;
-
     if (cachedData != null) {
       _navigateToIntakeGuide(context, cachedData);
     } else {

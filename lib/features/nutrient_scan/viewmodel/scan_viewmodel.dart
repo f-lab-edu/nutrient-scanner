@@ -59,7 +59,7 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
     final text = await _processImage(pickedImage.path);
     _updateRecognizedText(text);
 
-    await _cacheService.saveToCache(widget.barcode?.value ?? '', text);
+    await _cacheService.save(widget.barcode?.value ?? '', text);
   }
 
   Future<XFile?> _pickImage(ImageSource imageSource) async {
@@ -90,15 +90,12 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
   }
 
   Future<void> loadCachedData(String barcode) async {
+    if (barcode.isEmpty) return;
+
     try {
-      final cachedData = await _cacheService.loadFromCache(barcode);
+      final cachedData = await _cacheService.load(barcode);
       if (cachedData != null) {
         _updateRecognizedText(cachedData);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('No cached data found for this barcode.')),
-        );
       }
     } catch (e) {
       _handleError(e);

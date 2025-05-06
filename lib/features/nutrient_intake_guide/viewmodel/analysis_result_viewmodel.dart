@@ -6,12 +6,12 @@ class AnalysisResultViewModel {
 
   Future<void> saveToCache(String barcode, AnalysisResult result) async {
     final cacheKey = _getCacheKey(barcode);
-    await _cacheManager.saveToCache(cacheKey, result.answer);
+    await _cacheManager.save(cacheKey, result.answer);
   }
 
   Future<AnalysisResult?> loadFromCache(String barcode) async {
     final cacheKey = _getCacheKey(barcode);
-    final cachedAnswer = await _cacheManager.loadFromCache(cacheKey);
+    final cachedAnswer = await _cacheManager.load(cacheKey);
 
     if (cachedAnswer != null) {
       return AnalysisResult(cachedAnswer);

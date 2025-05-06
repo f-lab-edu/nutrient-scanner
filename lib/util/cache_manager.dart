@@ -20,8 +20,8 @@ class CacheManager {
       return null;
     }
     if (_isExpired(expiryDate)) {
-      await prefs.remove(key);
-      await prefs.remove('${key}_expiry');
+      await _removeKey(prefs, key);
+      return null;
     }
     return cachedValue;
   }
@@ -47,6 +47,10 @@ class CacheManager {
 
   Future<void> remove(String key) async {
     final prefs = await SharedPreferences.getInstance();
+    await _removeKey(prefs, key);
+  }
+
+  Future<void> _removeKey(SharedPreferences prefs, String key) async {
     await prefs.remove(key);
     await prefs.remove('${key}_expiry');
   }
