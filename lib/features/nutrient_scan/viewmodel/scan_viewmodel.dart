@@ -1,22 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nutrient_scanner/features/nutrient_intake_guide/viewmodel/guide_viewmodel.dart';
-import 'package:nutrient_scanner/features/nutrient_scanner/model/recognized_text_model.dart';
-import 'package:nutrient_scanner/features/nutrient_scanner/service/scanner_service.dart';
+import 'package:nutrient_scanner/features/nutrient_scan/model/recognized_text_model.dart';
+import 'package:nutrient_scanner/features/nutrient_scan/service/ocr_scan_service.dart';
 import 'package:nutrient_scanner/util/error_util.dart';
 
-part '../view/scanner_view.dart';
+import '../../barcode_scan/model/barcode_model.dart';
+import '../../barcode_scan/service/barcode_cache_service.dart';
 
-class NutrientLabelScannerViewModel extends StatefulWidget {
-  const NutrientLabelScannerViewModel({super.key});
+part '../view/scan_view.dart';
+
+class NutrientLabelScanViewModel extends StatefulWidget {
+  final Barcode? barcode;
+  const NutrientLabelScanViewModel({
+    super.key,
+    required this.barcode,
+  });
 
   @override
-  State<NutrientLabelScannerViewModel> createState() =>
-      _NutrientLabelScannerState();
+  State<NutrientLabelScanViewModel> createState() => _NutrientLabelScanState();
 }
 
-class _NutrientLabelScannerState extends State<NutrientLabelScannerViewModel> {
-  final ScannerService _scannerService = ScannerService();
+class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
+  final OCRScanService _scanService = OCRScanService();
+  final BarcodeCacheService _cacheService = BarcodeCacheService();
   NutrientRecognizedText? recognizedText;
   bool isLoading = false;
 
@@ -24,9 +31,9 @@ class _NutrientLabelScannerState extends State<NutrientLabelScannerViewModel> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nutrient Label Scanner'),
+        title: const Text('Nutrient Label Scan'),
       ),
-      body: _NutrientLabelScannerView(
+      body: _NutrientLabelScanView(
         recognizedText: recognizedText,
         isLoading: isLoading,
         getImage: getImage,
@@ -51,14 +58,16 @@ class _NutrientLabelScannerState extends State<NutrientLabelScannerViewModel> {
 
     final text = await _processImage(pickedImage.path);
     _updateRecognizedText(text);
+
+    await _cacheService.save(widget.barcode?.value ?? '', text);
   }
 
   Future<XFile?> _pickImage(ImageSource imageSource) async {
-    return await _scannerService.pickImage(imageSource);
+    return await _scanService.pickImage(imageSource);
   }
 
   Future<String> _processImage(String imagePath) async {
-    return await _scannerService.recognizeTextFromImage(imagePath);
+    return await _scanService.recognizeTextFromImage(imagePath);
   }
 
   void _updateRecognizedText(String text) {
@@ -78,5 +87,18 @@ class _NutrientLabelScannerState extends State<NutrientLabelScannerViewModel> {
     setState(() {
       isLoading = value;
     });
+  }
+
+  Future<void> loadCachedData(String barcode) async {
+    if (barcode.isEmpty) return;
+
+    try {
+      final cachedData = await _cacheService.load(barcode);
+      if (cachedData != null) {
+        _updateRecognizedText(cachedData);
+      }
+    } catch (e) {
+      _handleError(e);
+    }
   }
 }

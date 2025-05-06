@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nutrient_scanner/features/nutrient_scanner/viewmodel/scanner_viewmodel.dart';
+import 'package:nutrient_scanner/features/barcode_scan/viewmodel/scan_viewmodel.dart';
 
 void main() {
   runApp(
@@ -50,12 +50,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const NutrientLabelScannerViewModel(),
+                    builder: (context) => const BarcodeScanViewModel(),
                   ),
                 );
               },
-              child: const Text('Scan Nutrient Label',
-                  style: TextStyle(fontSize: 20)),
+              child: const Text('Scan Barcode', style: TextStyle(fontSize: 20)),
             ),
           ],
         ),
