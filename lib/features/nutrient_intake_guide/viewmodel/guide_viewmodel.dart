@@ -26,20 +26,18 @@ class _NutrientIntakeGuideViewModelState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text('Nutrient Intake Guide'),
-        ),
-        resizeToAvoidBottomInset: true,
-        body: _NutrientIntakeGuideView(
-          recognizedText: widget.recognizedText?.text ?? '',
-          answer: answer,
-          isLoading: isLoading,
-          systemTextController: _systemTextController,
-          userTextController: _userTextController,
-          analyzeNutrientLabel: analyzeNutrientLabel,
-          showRecognizedText: () => showRecognizedText(context),
-        ));
+    return _NutrientIntakeGuideView(
+      recognizedText:
+          '주정, 젤라틴, 글루탐산 나트륨, 기타 성분, 주정, 젤라틴, 글루탐산 나트륨, 기타 성분, 주정, 젤라틴, 글루탐산 나트륨, 기타 성분, 주정, 젤라틴, 글루탐산 나트륨, 기타 성분, 주정, 젤라틴, 글루탐산 나트륨, 기타 성분',
+      //widget.recognizedText?.text ?? '',
+      answer: answer,
+      isLoading: isLoading,
+      isHaram: true,
+      systemTextController: _systemTextController,
+      userTextController: _userTextController,
+      analyzeNutrientLabel: analyzeNutrientLabel,
+      showRecognizedText: () => showRecognizedText(context),
+    );
   }
 
   void analyzeNutrientLabel() async {

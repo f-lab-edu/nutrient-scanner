@@ -108,6 +108,7 @@ class _BarcodeScanState extends State<BarcodeScanViewModel> {
         builder: (context) => NutrientLabelScanViewModel(
           barcode: Barcode(scannedBarcode ?? ''),
         ),
+        fullscreenDialog: true,
       ),
     );
   }

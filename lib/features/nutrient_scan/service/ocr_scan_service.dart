@@ -1,14 +1,23 @@
+import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nutrient_scanner/features/nutrient_scan/service/custom_camera_service.dart';
 import 'package:nutrient_scanner/util/text_util.dart';
 
 class OCRScanService {
-  final ImagePicker _picker = ImagePicker();
+  //final ImagePicker _picker = ImagePicker();
   final TextRecognizer _textRecognizer =
       TextRecognizer(script: TextRecognitionScript.korean);
 
-  Future<XFile?> pickImage(ImageSource source) async {
-    return await _picker.pickImage(source: source);
+  Future<XFile?> pickImage(BuildContext context) async {
+    //return await _picker.pickImage(source: ImageSource.camera);
+    final XFile? image = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CustomCameraScreen(),
+      ),
+    );
+    return image;
   }
 
   Future<String> recognizeTextFromImage(String imagePath) async {

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:nutrient_scanner/features/nutrient_intake_guide/viewmodel/guide_viewmodel.dart';
 import 'package:nutrient_scanner/features/nutrient_scan/model/recognized_text_model.dart';
 import 'package:nutrient_scanner/features/nutrient_scan/service/ocr_scan_service.dart';
 import 'package:nutrient_scanner/util/error_util.dart';
 
 import '../../barcode_scan/model/barcode_model.dart';
 import '../../barcode_scan/service/barcode_cache_service.dart';
+import '../../scan_guide/viewmodel/scan_guide_viewmodel.dart';
 
 part '../view/scan_view.dart';
 
@@ -31,20 +31,51 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nutrient Label Scan'),
+        automaticallyImplyLeading: false,
+        centerTitle: true,
+        title: const Text(
+          'Analyze',
+          style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF1A1A1A)),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
       ),
       body: _NutrientLabelScanView(
         recognizedText: recognizedText,
         isLoading: isLoading,
-        getImage: getImage,
+        goToGuidePage: () => goToGuidePage(context),
       ),
+      floatingActionButton: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            getImage();
+          },
+          label: const Text(
+            'Capture',
+            style: TextStyle(fontSize: 16, color: Colors.white),
+          ),
+          backgroundColor: const Color(0xFF1AC2A0),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
-  Future<void> getImage(ImageSource imageSource) async {
+  Future<void> getImage() async {
     try {
       _setLoading(true);
-      await _pickAndProcessImage(imageSource);
+      await _pickAndProcessImage();
     } catch (e) {
       _handleError(e);
     } finally {
@@ -52,8 +83,8 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
     }
   }
 
-  Future<void> _pickAndProcessImage(ImageSource imageSource) async {
-    final pickedImage = await _pickImage(imageSource);
+  Future<void> _pickAndProcessImage() async {
+    final pickedImage = await _pickImage(context);
     if (pickedImage == null) return;
 
     final text = await _processImage(pickedImage.path);
@@ -62,8 +93,8 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
     await _cacheService.save(widget.barcode?.value ?? '', text);
   }
 
-  Future<XFile?> _pickImage(ImageSource imageSource) async {
-    return await _scanService.pickImage(imageSource);
+  Future<XFile?> _pickImage(BuildContext context) async {
+    return await _scanService.pickImage(context);
   }
 
   Future<String> _processImage(String imagePath) async {
@@ -100,5 +131,15 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
     } catch (e) {
       _handleError(e);
     }
+  }
+
+  void goToGuidePage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ScanGuideViewModel(),
+        fullscreenDialog: true,
+      ),
+    );
   }
 }
