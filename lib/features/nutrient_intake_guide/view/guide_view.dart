@@ -3,24 +3,27 @@ part of '../viewmodel/guide_viewmodel.dart';
 class _NutrientIntakeGuideView extends StatelessWidget {
   final String recognizedText;
   final bool isLoading;
-  final bool isHaram;
+  final bool isHalal;
+  final bool? isNotPork;
+  final bool? isNotAlcohol;
+  final bool? isNotOtherMeat;
+  final bool? isNotProducedWithPork;
   final String answer;
-  final TextEditingController systemTextController;
-  final TextEditingController userTextController;
   final Function() analyzeNutrientLabel;
   final Function() showRecognizedText;
   const _NutrientIntakeGuideView({
     required this.recognizedText,
     required this.answer,
     required this.isLoading,
-    required this.isHaram,
-    required this.systemTextController,
-    required this.userTextController,
+    required this.isHalal,
+    this.isNotPork,
+    this.isNotAlcohol,
+    this.isNotOtherMeat,
+    this.isNotProducedWithPork,
     required this.analyzeNutrientLabel,
     required this.showRecognizedText,
   });
 
-  ///TODO:: 프롬프트 입력 받는 부분은 추후에 제거하고, 고정된 프롬프트로 변경할 예정
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,15 +47,15 @@ class _NutrientIntakeGuideView extends StatelessWidget {
         ],
       ),
       backgroundColor:
-          isHaram ? const Color(0xFFEDFAF7) : const Color(0xFFFFF4F4),
+          isHalal ? const Color(0xFFEDFAF7) : const Color(0xFFFFF4F4),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               physics: const BouncingScrollPhysics(),
               padding: EdgeInsets.zero,
               children: [
-                _buildSimpleGuide(context, isHaram),
-                _buildDetailGuide(context, isHaram),
+                _buildSimpleGuide(context, isHalal),
+                _buildDetailGuide(context, isHalal),
                 Container(
                   width: double.infinity,
                   height: 6,
@@ -64,7 +67,7 @@ class _NutrientIntakeGuideView extends StatelessWidget {
     );
   }
 
-  Widget _buildSimpleGuide(BuildContext context, bool isHaram) {
+  Widget _buildSimpleGuide(BuildContext context, bool isHalal) {
     return Column(
       children: [
         Container(
@@ -77,7 +80,7 @@ class _NutrientIntakeGuideView extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Image.asset(
-                  isHaram
+                  isHalal
                       ? 'assets/images/check.png'
                       : 'assets/images/caution.png',
                   width: 54,
@@ -85,13 +88,13 @@ class _NutrientIntakeGuideView extends StatelessWidget {
                 ),
                 const SizedBox(height: 7),
                 Text(
-                  isHaram
+                  isHalal
                       ? 'Haram Ingredients not in lncluded'
                       : 'Haram Ingredients included',
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: isHaram
+                      color: isHalal
                           ? const Color(0xFF219981)
                           : const Color(0xFFE44C4C)),
                 )
@@ -103,7 +106,7 @@ class _NutrientIntakeGuideView extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailGuide(BuildContext context, bool isHaram) {
+  Widget _buildDetailGuide(BuildContext context, bool isHalal) {
     return Container(
       width: double.infinity,
       decoration: const ShapeDecoration(
@@ -154,34 +157,135 @@ class _NutrientIntakeGuideView extends StatelessWidget {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isHaram
-                          ? const Color(0xFFEDFAF7)
-                          : const Color(0xFFFFF4F4),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      'Caution',
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: isHaram
-                              ? const Color(0xFF1AC2A0)
-                              : const Color(0xFFE44C4C)),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                children: [_buildSummary(context)],
               ),
             ),
+            Text(answer),
             const SizedBox(height: 48),
             const SizedBox(height: 20),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSummary(BuildContext context) {
+    final safeItems = [
+      if (isNotPork == true)
+        {'icon': 'assets/icons/caution_fill.png', 'label': 'No Pork'},
+      if (isNotAlcohol == true)
+        {'icon': 'assets/icons/drink.png', 'label': 'No Alcohol'},
+      if (isNotOtherMeat == true)
+        {
+          'icon': 'assets/icons/food.png',
+          'label': 'No Other meat (Beef or Chicken)'
+        },
+      if (isNotProducedWithPork == true)
+        {
+          'icon': 'assets/icons/factory.png',
+          'label': 'Not produced with Pork in the same facility'
+        },
+    ];
+
+    final cautionItems = [
+      if (isNotPork == false)
+        {'icon': 'assets/icons/caution_fill.png', 'label': 'Pork in it'},
+      if (isNotAlcohol == false)
+        {'icon': 'assets/icons/drink.png', 'label': 'Alcohol in it'},
+      if (isNotOtherMeat == false)
+        {
+          'icon': 'assets/icons/food.png',
+          'label': 'Other meat (Beef or Chicken) in it'
+        },
+      if (isNotProducedWithPork == false)
+        {
+          'icon': 'assets/icons/factory.png',
+          'label': 'Produced with Pork in the same facility'
+        },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (safeItems.isNotEmpty) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEDFAF7),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Text(
+              'Safe',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF1AC2A0)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...safeItems.map((item) => _buildSummaryItem(
+                context,
+                icon: item['icon'] as String,
+                label: item['label'] as String,
+              )),
+        ],
+        if (safeItems.isNotEmpty && cautionItems.isNotEmpty) ...[
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 20),
+            width: double.infinity,
+            height: 1,
+            color: const Color(0xFFF1F1F1),
+          ),
+        ],
+        if (cautionItems.isNotEmpty) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF4F4),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Text(
+              'Caution',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFFE44C4C)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...cautionItems.map((item) => _buildSummaryItem(
+                context,
+                icon: item['icon'] as String,
+                label: item['label'] as String,
+              )),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSummaryItem(
+    BuildContext context, {
+    required String icon,
+    required String label,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Image.asset(icon, width: 24, height: 24),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF505050),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

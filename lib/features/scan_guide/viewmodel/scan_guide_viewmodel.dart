@@ -2,16 +2,74 @@ import 'package:flutter/material.dart';
 
 part '../view/scan_guide_view.dart';
 
-class ScanGuideViewModel extends StatelessWidget {
-  final PageController pageController = PageController();
-  int currentPage = 0;
+class ScanGuideViewModel extends StatefulWidget {
+  const ScanGuideViewModel({super.key});
+  @override
+  State<ScanGuideViewModel> createState() => _ScanGuideViewModelState();
+}
+
+class _ScanGuideViewModelState extends State<ScanGuideViewModel> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+  bool get _isLastPage => _currentPage == _pages.length - 1;
 
   @override
   Widget build(BuildContext context) {
-    return const _ScanGuideView();
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        centerTitle: true,
+        title: const Text(
+          'Guide',
+          style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF1A1A1A)),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+      floatingActionButton: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            if (_isLastPage) {
+              Navigator.of(context).pop();
+            } else {
+              goToNextPage();
+            }
+          },
+          label: Text(
+            _isLastPage ? 'Confirm' : 'Next',
+            style: const TextStyle(fontSize: 16, color: Colors.white),
+          ),
+          backgroundColor: const Color(0xFF1AC2A0),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      body: _ScanGuideView(
+        currentPage: _currentPage,
+        isLastPage: _isLastPage,
+        pageController: _pageController,
+        pages: _pages,
+        updateCurrentPage: (index) {
+          setState(() {
+            _currentPage = index;
+          });
+        },
+      ),
+    );
   }
 
-  final List<Map<String, String>> pages = [
+  final List<Map<String, String>> _pages = [
     {
       'description':
           'For pouch items, please flatten and show the text on the back',
@@ -30,14 +88,12 @@ class ScanGuideViewModel extends StatelessWidget {
   ];
 
   void updateCurrentPage(int index) {
-    currentPage = index;
+    _currentPage = index;
   }
 
-  bool get isLastPage => currentPage == pages.length - 1;
-
   void goToNextPage() {
-    if (!isLastPage) {
-      pageController.nextPage(
+    if (!_isLastPage) {
+      _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );

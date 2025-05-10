@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nutrient_scanner/features/nutrient_intake_guide/viewmodel/guide_viewmodel.dart';
 import 'package:nutrient_scanner/features/nutrient_scan/model/recognized_text_model.dart';
 import 'package:nutrient_scanner/features/nutrient_scan/service/ocr_scan_service.dart';
 import 'package:nutrient_scanner/util/error_util.dart';
@@ -52,15 +53,13 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
       body: _NutrientLabelScanView(
         recognizedText: recognizedText,
         isLoading: isLoading,
-        goToGuidePage: () => goToGuidePage(context),
+        navigateToGuidePage: () => navigateToGuidePage(context),
       ),
       floatingActionButton: Container(
         width: double.infinity,
         margin: const EdgeInsets.symmetric(horizontal: 16),
         child: FloatingActionButton.extended(
-          onPressed: () {
-            getImage();
-          },
+          onPressed: () => getImage(context),
           label: const Text(
             'Capture',
             style: TextStyle(fontSize: 16, color: Colors.white),
@@ -72,10 +71,10 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
     );
   }
 
-  Future<void> getImage() async {
+  Future<void> getImage(BuildContext context) async {
     try {
       _setLoading(true);
-      await _pickAndProcessImage();
+      await _pickAndProcessImage(context);
     } catch (e) {
       _handleError(e);
     } finally {
@@ -83,7 +82,7 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
     }
   }
 
-  Future<void> _pickAndProcessImage() async {
+  Future<void> _pickAndProcessImage(BuildContext context) async {
     final pickedImage = await _pickImage(context);
     if (pickedImage == null) return;
 
@@ -91,6 +90,9 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
     _updateRecognizedText(text);
 
     await _cacheService.save(widget.barcode?.value ?? '', text);
+    if (context.mounted) {
+      _navigateToIntakeGuide(context, text);
+    }
   }
 
   Future<XFile?> _pickImage(BuildContext context) async {
@@ -102,6 +104,7 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
   }
 
   void _updateRecognizedText(String text) {
+    if (text.isEmpty || text == '') return;
     setState(() {
       recognizedText = NutrientRecognizedText(text);
     });
@@ -133,12 +136,23 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
     }
   }
 
-  void goToGuidePage(BuildContext context) {
+  void navigateToGuidePage(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ScanGuideViewModel(),
+        builder: (context) => const ScanGuideViewModel(),
         fullscreenDialog: true,
+      ),
+    );
+  }
+
+  void _navigateToIntakeGuide(BuildContext context, String cachedData) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => NutrientIntakeGuideViewModel(
+          recognizedText: NutrientRecognizedText(cachedData),
+        ),
       ),
     );
   }

@@ -3,11 +3,11 @@ part of '../viewmodel/scan_viewmodel.dart';
 class _NutrientLabelScanView extends StatelessWidget {
   final NutrientRecognizedText? recognizedText;
   final bool isLoading;
-  final Function() goToGuidePage;
+  final Function() navigateToGuidePage;
   const _NutrientLabelScanView({
     required this.recognizedText,
     required this.isLoading,
-    required this.goToGuidePage,
+    required this.navigateToGuidePage,
   });
 
   @override
@@ -48,7 +48,7 @@ class _NutrientLabelScanView extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 InkWell(
-                  onTap: goToGuidePage,
+                  onTap: navigateToGuidePage,
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
                     padding: const EdgeInsets.all(12),

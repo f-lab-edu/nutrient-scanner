@@ -1,16 +1,21 @@
-import 'package:camera/camera.dart';
-import 'package:flutter/material.dart';
+import 'dart:io';
 
-class CustomCameraScreen extends StatefulWidget {
-  const CustomCameraScreen({super.key});
+import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+class CustomCameraService extends StatefulWidget {
+  const CustomCameraService({super.key});
 
   @override
-  State<CustomCameraScreen> createState() => _CustomCameraScreenState();
+  State<CustomCameraService> createState() => _CustomCameraServiceState();
 }
 
-class _CustomCameraScreenState extends State<CustomCameraScreen> {
+class _CustomCameraServiceState extends State<CustomCameraService> {
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
+  XFile? _capturedImage;
 
   @override
   void initState() {
@@ -57,15 +62,29 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
   }
 
   Future<void> _captureImage(BuildContext context) async {
-    try {
-      if (_cameraController != null && _cameraController!.value.isInitialized) {
-        final XFile image = await _cameraController!.takePicture();
-        if (context.mounted) {
-          Navigator.of(context).pop(image);
-        }
+    if (kDebugMode) {
+      // 디버그 모드에서는 갤러리에서 이미지 선택
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        setState(() {
+          _capturedImage = image;
+        });
       }
-    } catch (e) {
-      debugPrint('Error capturing image: $e');
+    } else {
+      try {
+        if (_cameraController != null &&
+            _cameraController!.value.isInitialized) {
+          final XFile image = await _cameraController!.takePicture();
+          if (context.mounted) {
+            setState(() {
+              _capturedImage = image;
+            });
+          }
+        }
+      } catch (e) {
+        debugPrint('Error capturing image: $e');
+      }
     }
   }
 
@@ -77,6 +96,76 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
       );
     }
 
+    if (_capturedImage != null) {
+      return Scaffold(
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.file(
+                File(_capturedImage!.path),
+                fit: BoxFit.contain,
+              ),
+            ),
+            _closeButton(context),
+            Positioned(
+              bottom: 32,
+              left: 0,
+              right: 0,
+              child: Column(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      Navigator.of(context).pop(_capturedImage); // 이미지를 반환
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 20),
+                      padding: const EdgeInsets.all(14),
+                      height: 48,
+                      decoration: ShapeDecoration(
+                        color: const Color(0xFF2BC4A6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Analyze',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        _capturedImage = null;
+                      });
+                    },
+                    child: const Center(
+                      child: Text(
+                        'Try again',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF2FD7B6),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Material(
       child: Stack(
         children: [
@@ -84,7 +173,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
           Positioned.fill(
             child: CameraPreview(_cameraController!),
           ),
-
+          _closeButton(context),
           Positioned(
             left: 0,
             right: 0,
@@ -141,6 +230,19 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _closeButton(BuildContext context) {
+    return Positioned(
+      top: 32,
+      right: 0,
+      child: IconButton(
+        icon: const Icon(Icons.close),
+        onPressed: () {
+          Navigator.of(context).pop();
+        },
       ),
     );
   }

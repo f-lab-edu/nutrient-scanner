@@ -5,16 +5,14 @@ import 'package:nutrient_scanner/features/nutrient_scan/service/custom_camera_se
 import 'package:nutrient_scanner/util/text_util.dart';
 
 class OCRScanService {
-  //final ImagePicker _picker = ImagePicker();
   final TextRecognizer _textRecognizer =
       TextRecognizer(script: TextRecognitionScript.korean);
 
   Future<XFile?> pickImage(BuildContext context) async {
-    //return await _picker.pickImage(source: ImageSource.camera);
     final XFile? image = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const CustomCameraScreen(),
+        builder: (context) => const CustomCameraService(),
       ),
     );
     return image;
