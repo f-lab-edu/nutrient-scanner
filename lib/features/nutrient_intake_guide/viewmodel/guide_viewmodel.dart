@@ -48,7 +48,6 @@ class _NutrientIntakeGuideViewModelState
       isNotOtherMeat: isNotOtherMeat,
       isNotProducedWithPork: isNotProducedWithPork,
       analyzeNutrientLabel: analyzeNutrientLabel,
-      showRecognizedText: () => showRecognizedText(context),
     );
   }
 
@@ -58,7 +57,7 @@ class _NutrientIntakeGuideViewModelState
       final result = await _fetchAnalysisResult();
       _updateAnswer(result);
     } catch (e) {
-      _showError(e);
+      _handleError(e);
     } finally {
       _setLoading(false);
     }
@@ -68,16 +67,19 @@ class _NutrientIntakeGuideViewModelState
     setState(() {
       final analysisResult = AnalysisResult.fromApiResponse(result);
       answer = analysisResult.answer;
-
-      final parsedAnswer = _parseAnswer(answer);
-
-      isHalal = parsedAnswer['Halal']?['value'] ?? false;
-      isNotPork = parsedAnswer['No Pork']?['value'];
-      isNotAlcohol = parsedAnswer['No Alcohol']?['value'];
-      isNotOtherMeat = parsedAnswer['No Other Meat']?['value'];
-      isNotProducedWithPork =
-          parsedAnswer['No Produced with Pork in the Same Facility']?['value'];
+      _parseData(answer);
     });
+  }
+
+  void _parseData(String data) {
+    final parsedAnswer = _parseAnswer(answer);
+
+    isHalal = parsedAnswer['Halal']?['value'] ?? false;
+    isNotPork = parsedAnswer['No Pork']?['value'];
+    isNotAlcohol = parsedAnswer['No Alcohol']?['value'];
+    isNotOtherMeat = parsedAnswer['No Other Meat']?['value'];
+    isNotProducedWithPork =
+        parsedAnswer['No Produced with Pork in the Same Facility']?['value'];
   }
 
   Map<String, dynamic> _parseAnswer(String answer) {
@@ -105,13 +107,13 @@ class _NutrientIntakeGuideViewModelState
         parsedResult[key] = {'value': boolValue, 'reason': reason};
       });
     } catch (e) {
-      debugPrint('JSON 파싱 에러: $e');
+      _handleError(e);
     }
 
     return parsedResult;
   }
 
-  void _showError(Object error) {
+  void _handleError(Object error) {
     final errorMessage = ErrorUtil.formatErrorMessage(error);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(errorMessage)),
@@ -130,27 +132,5 @@ class _NutrientIntakeGuideViewModelState
     );
 
     return result;
-  }
-
-  void showRecognizedText(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('OCR 데이터'),
-          content: SingleChildScrollView(
-            child: Text(widget.recognizedText?.text ?? ''),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('닫기'),
-            ),
-          ],
-        );
-      },
-    );
   }
 }

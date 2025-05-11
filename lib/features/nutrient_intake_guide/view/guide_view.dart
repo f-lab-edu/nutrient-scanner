@@ -10,7 +10,6 @@ class _NutrientIntakeGuideView extends StatelessWidget {
   final bool? isNotProducedWithPork;
   final String answer;
   final Function() analyzeNutrientLabel;
-  final Function() showRecognizedText;
   const _NutrientIntakeGuideView({
     required this.recognizedText,
     required this.answer,
@@ -21,7 +20,6 @@ class _NutrientIntakeGuideView extends StatelessWidget {
     this.isNotOtherMeat,
     this.isNotProducedWithPork,
     required this.analyzeNutrientLabel,
-    required this.showRecognizedText,
   });
 
   @override
@@ -161,7 +159,14 @@ class _NutrientIntakeGuideView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 48),
-            const SizedBox(height: 20),
+            Container(
+              height: 50,
+              width: double.infinity,
+              color: Colors.blue,
+              child: const Center(
+                child: Text('banner'),
+              ),
+            ),
           ],
         ),
       ),
