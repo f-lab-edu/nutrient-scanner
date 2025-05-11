@@ -1,10 +1,10 @@
-part of '../viewmodel/scanner_viewmodel.dart';
+part of '../viewmodel/scan_viewmodel.dart';
 
-class _NutrientLabelScannerView extends StatelessWidget {
+class _NutrientLabelScanView extends StatelessWidget {
   final NutrientRecognizedText? recognizedText;
   final bool isLoading;
   final Function(ImageSource imageSource) getImage;
-  const _NutrientLabelScannerView({
+  const _NutrientLabelScanView({
     required this.recognizedText,
     required this.isLoading,
     required this.getImage,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nutrient_scanner/features/nutrient_intake_guide/model/analysis_result.dart';
 import 'package:nutrient_scanner/features/nutrient_intake_guide/service/openai_service.dart';
-import 'package:nutrient_scanner/features/nutrient_scanner/model/recognized_text_model.dart';
+import 'package:nutrient_scanner/features/nutrient_scan/model/recognized_text_model.dart';
 import 'package:nutrient_scanner/util/error_util.dart';
 
 part '../view/guide_view.dart';
