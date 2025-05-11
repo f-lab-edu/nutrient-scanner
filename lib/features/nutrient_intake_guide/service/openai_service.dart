@@ -14,7 +14,7 @@ class OpenAIService {
 - No Produced with Pork in the Same Facility: [true/false]. 이유: [왜 돼지고기를 사용하는 시설에서 생산되었는지 또는 생산되지 않았는지 설명].
 - Halal: [true/false]. 이유: [왜 할랄인지 또는 아닌지 설명].
 
-만약 필요한 정보가 부족한 항목이 있다면, 그 항목은답변에서 제외해.
+만약 필요한 정보가 부족한 항목이 있다면, 그 항목은 답변에서 제외해. 다만 Halal 여부는 항상 포함해줘.
 ''';
 
   final userPrompt = '''
