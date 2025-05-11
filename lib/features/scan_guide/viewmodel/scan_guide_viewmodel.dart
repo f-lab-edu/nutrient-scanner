@@ -17,43 +17,8 @@ class _ScanGuideViewModelState extends State<ScanGuideViewModel> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        centerTitle: true,
-        title: const Text(
-          'Guide',
-          style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF1A1A1A)),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      ),
-      floatingActionButton: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        child: FloatingActionButton.extended(
-          onPressed: () {
-            if (_isLastPage) {
-              Navigator.of(context).pop();
-            } else {
-              goToNextPage();
-            }
-          },
-          label: Text(
-            _isLastPage ? 'Confirm' : 'Next',
-            style: const TextStyle(fontSize: 16, color: Colors.white),
-          ),
-          backgroundColor: const Color(0xFF1AC2A0),
-        ),
-      ),
+      appBar: _appBar(context),
+      floatingActionButton: _floatingActionButton(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: _ScanGuideView(
         currentPage: _currentPage,
@@ -98,5 +63,48 @@ class _ScanGuideViewModelState extends State<ScanGuideViewModel> {
         curve: Curves.easeInOut,
       );
     }
+  }
+
+  PreferredSizeWidget _appBar(BuildContext context) {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      centerTitle: true,
+      title: const Text(
+        'Guide',
+        style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF1A1A1A)),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _floatingActionButton(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: FloatingActionButton.extended(
+        onPressed: () {
+          if (_isLastPage) {
+            Navigator.of(context).pop();
+          } else {
+            goToNextPage();
+          }
+        },
+        label: Text(
+          _isLastPage ? 'Confirm' : 'Next',
+          style: const TextStyle(fontSize: 16, color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFF1AC2A0),
+      ),
+    );
   }
 }

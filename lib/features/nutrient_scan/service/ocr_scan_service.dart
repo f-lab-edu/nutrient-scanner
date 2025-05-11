@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:nutrient_scanner/features/nutrient_scan/service/custom_camera_service.dart';
+import 'package:nutrient_scanner/features/nutrient_scan/view/custom_camera_view.dart';
 import 'package:nutrient_scanner/util/text_util.dart';
 
 class OCRScanService {
@@ -12,7 +12,7 @@ class OCRScanService {
     final XFile? image = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const CustomCameraService(),
+        builder: (context) => const CustomCameraView(),
       ),
     );
     return image;

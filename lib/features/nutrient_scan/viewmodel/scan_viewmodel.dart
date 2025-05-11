@@ -31,42 +31,13 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        centerTitle: true,
-        title: const Text(
-          'Analyze',
-          style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF1A1A1A)),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      ),
+      appBar: _appBar(context),
       body: _NutrientLabelScanView(
         recognizedText: recognizedText,
         isLoading: isLoading,
         navigateToGuidePage: () => navigateToGuidePage(context),
       ),
-      floatingActionButton: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        child: FloatingActionButton.extended(
-          onPressed: () => getImage(context),
-          label: const Text(
-            'Capture',
-            style: TextStyle(fontSize: 16, color: Colors.white),
-          ),
-          backgroundColor: const Color(0xFF1AC2A0),
-        ),
-      ),
+      floatingActionButton: _floatingActionButton(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
@@ -153,6 +124,43 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
         builder: (context) => NutrientIntakeGuideViewModel(
           recognizedText: NutrientRecognizedText(cachedData),
         ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _appBar(BuildContext context) {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      centerTitle: true,
+      title: const Text(
+        'Analyze',
+        style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF1A1A1A)),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _floatingActionButton(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: FloatingActionButton.extended(
+        onPressed: () => getImage(context),
+        label: const Text(
+          'Capture',
+          style: TextStyle(fontSize: 16, color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFF1AC2A0),
       ),
     );
   }
