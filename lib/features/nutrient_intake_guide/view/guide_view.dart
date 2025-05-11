@@ -160,7 +160,6 @@ class _NutrientIntakeGuideView extends StatelessWidget {
                 children: [_buildSummary(context)],
               ),
             ),
-            Text(answer),
             const SizedBox(height: 48),
             const SizedBox(height: 20),
           ],

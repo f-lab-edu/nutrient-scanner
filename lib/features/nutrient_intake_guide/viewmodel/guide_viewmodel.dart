@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:core';
 
 import 'package:flutter/material.dart';
@@ -70,51 +71,43 @@ class _NutrientIntakeGuideViewModelState
 
       final parsedAnswer = _parseAnswer(answer);
 
-      isHalal = parsedAnswer['Halal']?['value'] == false;
-      isNotPork = parsedAnswer['Pork']?['value'] == false;
-      isNotAlcohol = parsedAnswer['Alcohol']?['value'] == false;
-      isNotOtherMeat = parsedAnswer['Other Meat']?['value'] == false;
+      isHalal = parsedAnswer['Halal']?['value'] ?? false;
+      isNotPork = parsedAnswer['No Pork']?['value'];
+      isNotAlcohol = parsedAnswer['No Alcohol']?['value'];
+      isNotOtherMeat = parsedAnswer['No Other Meat']?['value'];
       isNotProducedWithPork =
-          parsedAnswer['Produced with Pork in the Same Facility']?['value'] ==
-              false;
+          parsedAnswer['No Produced with Pork in the Same Facility']?['value'];
     });
   }
 
   Map<String, dynamic> _parseAnswer(String answer) {
     final Map<String, dynamic> parsedResult = {};
-    final lines = answer.split('\n');
-    for (final line in lines) {
-      if (line.contains(':')) {
-        final parts = line.split(':');
-        if (parts.length < 2) continue;
 
-        final key = parts[0].trim();
-        final valueParts = parts[1].split('. 이유'); // ". 이유"로 나누도록 수정
-        final valueString = valueParts[0].trim();
+    try {
+      // 문자열 앞뒤 공백 및 백틱 제거
+      final cleanedAnswer =
+          answer.trim().replaceAll('```json', '').replaceAll('```', '');
 
-        // 디버깅: valueString 출력
-        debugPrint('Key: $key, ValueString: $valueString');
+      final Map<String, dynamic> jsonData = jsonDecode(cleanedAnswer);
 
-        // true/false가 아닌 경우 null로 설정
-        final boolValue = valueString == 'true'
-            ? true
-            : valueString == 'false'
-                ? false
-                : null;
-
+      jsonData.forEach((key, value) {
         // "정보 부족"인 경우 null로 설정
-        if (valueString == '정보 부족') {
-          parsedResult[key] = {'value': null, 'reason': '정보 부족'};
-          continue;
-        }
+        final boolValue = value['value'] == true
+            ? true
+            : value['value'] == false
+                ? false
+                : value['value'] == '정보 부족'
+                    ? null
+                    : null;
 
-        final reason = valueParts.length > 1 ? valueParts[1].trim() : '정보 부족';
+        final reason = value['description'] ?? '정보 부족';
+
         parsedResult[key] = {'value': boolValue, 'reason': reason};
-      }
+      });
+    } catch (e) {
+      debugPrint('JSON 파싱 에러: $e');
     }
 
-    // 디버깅: 최종 파싱 결과 출력
-    debugPrint('Parsed Result: $parsedResult');
     return parsedResult;
   }
 
@@ -132,9 +125,11 @@ class _NutrientIntakeGuideViewModelState
   }
 
   Future<String> _fetchAnalysisResult() async {
-    return await _openAIService.analyzeNutrientLabel(
+    final result = await _openAIService.analyzeNutrientLabel(
       recognizedText: widget.recognizedText?.text ?? '',
     );
+
+    return result;
   }
 
   void showRecognizedText(BuildContext context) {
