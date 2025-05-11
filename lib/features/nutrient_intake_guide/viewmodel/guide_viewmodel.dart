@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:core';
+
 import 'package:flutter/material.dart';
 import 'package:nutrient_scanner/features/nutrient_intake_guide/model/analysis_result.dart';
 import 'package:nutrient_scanner/features/nutrient_intake_guide/service/openai_service.dart';
@@ -17,29 +20,35 @@ class NutrientIntakeGuideViewModel extends StatefulWidget {
 
 class _NutrientIntakeGuideViewModelState
     extends State<NutrientIntakeGuideViewModel> {
-  final TextEditingController _systemTextController = TextEditingController();
-  final TextEditingController _userTextController = TextEditingController();
   final OpenAIService _openAIService = OpenAIService();
 
   bool isLoading = false;
+  bool isHalal = false;
+  bool? isNotPork;
+  bool? isNotAlcohol;
+  bool? isNotOtherMeat;
+  bool? isNotProducedWithPork;
   String answer = '';
 
   @override
+  void initState() {
+    super.initState();
+    analyzeNutrientLabel();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text('Nutrient Intake Guide'),
-        ),
-        resizeToAvoidBottomInset: true,
-        body: _NutrientIntakeGuideView(
-          recognizedText: widget.recognizedText?.text ?? '',
-          answer: answer,
-          isLoading: isLoading,
-          systemTextController: _systemTextController,
-          userTextController: _userTextController,
-          analyzeNutrientLabel: analyzeNutrientLabel,
-          showRecognizedText: () => showRecognizedText(context),
-        ));
+    return _NutrientIntakeGuideView(
+      recognizedText: widget.recognizedText?.text ?? '',
+      answer: answer,
+      isLoading: isLoading,
+      isHalal: isHalal,
+      isNotPork: isNotPork,
+      isNotAlcohol: isNotAlcohol,
+      isNotOtherMeat: isNotOtherMeat,
+      isNotProducedWithPork: isNotProducedWithPork,
+      analyzeNutrientLabel: analyzeNutrientLabel,
+    );
   }
 
   void analyzeNutrientLabel() async {
@@ -48,7 +57,7 @@ class _NutrientIntakeGuideViewModelState
       final result = await _fetchAnalysisResult();
       _updateAnswer(result);
     } catch (e) {
-      _showError(e);
+      _handleError(e);
     } finally {
       _setLoading(false);
     }
@@ -58,10 +67,53 @@ class _NutrientIntakeGuideViewModelState
     setState(() {
       final analysisResult = AnalysisResult.fromApiResponse(result);
       answer = analysisResult.answer;
+      _parseData(answer);
     });
   }
 
-  void _showError(Object error) {
+  void _parseData(String data) {
+    final parsedAnswer = _parseAnswer(answer);
+
+    isHalal = parsedAnswer['Halal']?['value'] ?? false;
+    isNotPork = parsedAnswer['No Pork']?['value'];
+    isNotAlcohol = parsedAnswer['No Alcohol']?['value'];
+    isNotOtherMeat = parsedAnswer['No Other Meat']?['value'];
+    isNotProducedWithPork =
+        parsedAnswer['No Produced with Pork in the Same Facility']?['value'];
+  }
+
+  Map<String, dynamic> _parseAnswer(String answer) {
+    final Map<String, dynamic> parsedResult = {};
+
+    try {
+      // 문자열 앞뒤 공백 및 백틱 제거
+      final cleanedAnswer =
+          answer.trim().replaceAll('```json', '').replaceAll('```', '');
+
+      final Map<String, dynamic> jsonData = jsonDecode(cleanedAnswer);
+
+      jsonData.forEach((key, value) {
+        // "정보 부족"인 경우 null로 설정
+        final boolValue = value['value'] == true
+            ? true
+            : value['value'] == false
+                ? false
+                : value['value'] == '정보 부족'
+                    ? null
+                    : null;
+
+        final reason = value['description'] ?? '정보 부족';
+
+        parsedResult[key] = {'value': boolValue, 'reason': reason};
+      });
+    } catch (e) {
+      _handleError(e);
+    }
+
+    return parsedResult;
+  }
+
+  void _handleError(Object error) {
     final errorMessage = ErrorUtil.formatErrorMessage(error);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(errorMessage)),
@@ -75,32 +127,10 @@ class _NutrientIntakeGuideViewModelState
   }
 
   Future<String> _fetchAnalysisResult() async {
-    return await _openAIService.analyzeNutrientLabel(
-      systemPrompt: _systemTextController.text,
-      userPrompt: _userTextController.text,
+    final result = await _openAIService.analyzeNutrientLabel(
       recognizedText: widget.recognizedText?.text ?? '',
     );
-  }
 
-  void showRecognizedText(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('OCR 데이터'),
-          content: SingleChildScrollView(
-            child: Text(widget.recognizedText?.text ?? ''),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('닫기'),
-            ),
-          ],
-        );
-      },
-    );
+    return result;
   }
 }

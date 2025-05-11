@@ -7,6 +7,7 @@ import 'package:nutrient_scanner/util/error_util.dart';
 
 import '../../barcode_scan/model/barcode_model.dart';
 import '../../barcode_scan/service/barcode_cache_service.dart';
+import '../../scan_guide/viewmodel/scan_guide_viewmodel.dart';
 
 part '../view/scan_view.dart';
 
@@ -30,21 +31,21 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Nutrient Label Scan'),
-      ),
+      appBar: _appBar(context),
       body: _NutrientLabelScanView(
         recognizedText: recognizedText,
         isLoading: isLoading,
-        getImage: getImage,
+        navigateToGuidePage: () => navigateToGuidePage(context),
       ),
+      floatingActionButton: _floatingActionButton(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
-  Future<void> getImage(ImageSource imageSource) async {
+  Future<void> getImage(BuildContext context) async {
     try {
       _setLoading(true);
-      await _pickAndProcessImage(imageSource);
+      await _pickAndProcessImage(context);
     } catch (e) {
       _handleError(e);
     } finally {
@@ -52,18 +53,21 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
     }
   }
 
-  Future<void> _pickAndProcessImage(ImageSource imageSource) async {
-    final pickedImage = await _pickImage(imageSource);
+  Future<void> _pickAndProcessImage(BuildContext context) async {
+    final pickedImage = await _pickImage(context);
     if (pickedImage == null) return;
 
     final text = await _processImage(pickedImage.path);
     _updateRecognizedText(text);
 
     await _cacheService.save(widget.barcode?.value ?? '', text);
+    if (context.mounted) {
+      _navigateToIntakeGuide(context, text);
+    }
   }
 
-  Future<XFile?> _pickImage(ImageSource imageSource) async {
-    return await _scanService.pickImage(imageSource);
+  Future<XFile?> _pickImage(BuildContext context) async {
+    return await _scanService.pickImage(context);
   }
 
   Future<String> _processImage(String imagePath) async {
@@ -71,6 +75,7 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
   }
 
   void _updateRecognizedText(String text) {
+    if (text.isEmpty || text == '') return;
     setState(() {
       recognizedText = NutrientRecognizedText(text);
     });
@@ -100,5 +105,63 @@ class _NutrientLabelScanState extends State<NutrientLabelScanViewModel> {
     } catch (e) {
       _handleError(e);
     }
+  }
+
+  void navigateToGuidePage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ScanGuideViewModel(),
+        fullscreenDialog: true,
+      ),
+    );
+  }
+
+  void _navigateToIntakeGuide(BuildContext context, String cachedData) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => NutrientIntakeGuideViewModel(
+          recognizedText: NutrientRecognizedText(cachedData),
+        ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _appBar(BuildContext context) {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      centerTitle: true,
+      title: const Text(
+        'Analyze',
+        style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF1A1A1A)),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _floatingActionButton(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: FloatingActionButton.extended(
+        onPressed: () => getImage(context),
+        label: const Text(
+          'Capture',
+          style: TextStyle(fontSize: 16, color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFF1AC2A0),
+      ),
+    );
   }
 }
