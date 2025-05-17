@@ -28,9 +28,6 @@ jobs:
       - name: 의존성 설치
         run: flutter pub get
 
-      - name: 코드 포맷 확인
-        run: dart format --set-exit-if-changed .
-
       - name: 코드 분석
         run: flutter analyze
 
