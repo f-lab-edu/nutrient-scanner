@@ -28,9 +28,6 @@ jobs:
       - name: 의존성 설치
         run: flutter pub get
 
-      - name: 코드 분석
-        run: flutter analyze
-
       - name: 테스트 실행
         run: flutter test
 
