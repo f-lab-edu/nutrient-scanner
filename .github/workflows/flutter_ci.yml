@@ -29,7 +29,7 @@ jobs:
         run: flutter pub get
 
       - name: 코드 포맷 확인
-        run: flutter format --set-exit-if-changed .
+        run: dart format --set-exit-if-changed .
 
       - name: 코드 분석
         run: flutter analyze
