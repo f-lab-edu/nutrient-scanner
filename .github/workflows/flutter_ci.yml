@@ -23,7 +23,6 @@ jobs:
       - name: Flutter 설치
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.3'
           channel: 'stable'
 
       - name: 의존성 설치
