@@ -28,8 +28,13 @@ jobs:
       - name: 의존성 설치
         run: flutter pub get
 
-      - name: OpenAI API 키 설정
-        run: echo "OPEN_AI_API_KEY=${{ secrets.OPEN_AI_API_KEY }}" >> $GITHUB_ENV
+      - name: Create env.dart
+        run: |
+          mkdir -p lib/config
+          echo "class Env {" > lib/config/env.dart
+          echo "  static const apiKey = '${{ secrets.OPEN_AI_API_KEY }}';" >> lib/config/env.dart
+          echo "}" >> lib/config/env.dart
+
 
       - name: APK 빌드
         run: flutter build apk --release
