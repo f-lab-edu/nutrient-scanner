@@ -8,6 +8,9 @@ class CameraService {
 
   CameraController? get cameraController => _cameraController;
 
+  VoidCallback? onCameraInitialized;
+  VoidCallback? onCameraError;
+
   Future<void> initializeCamera() async {
     try {
       _cameras = await availableCameras();
@@ -18,10 +21,12 @@ class CameraService {
           enableAudio: false,
         );
         await _cameraController!.initialize();
+        onCameraInitialized?.call();
       }
     } catch (e) {
       if (e is CameraException) {
         _handleCameraException(e);
+        onCameraError?.call();
       }
     }
   }
