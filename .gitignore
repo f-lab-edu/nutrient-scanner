@@ -49,3 +49,6 @@ lib/config/env.g.dart
 
 # vscode
 .vscode/launch.json
+
+devtools_options.yaml
+

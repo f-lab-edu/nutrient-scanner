@@ -20,6 +20,7 @@ dependencies:
   flutter_riverpod: ^2.6.1
   shared_preferences: ^2.5.3
   simple_barcode_scanner: ^0.3.0
+  camera: ^0.11.0+2
 
 dev_dependencies:
   integration_test:
@@ -33,3 +34,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+      - assets/
+      - assets/images/
+      - assets/icons/
+      
